@@ -1,0 +1,120 @@
+# define the procedure to be used
+
+procedure particle_tracking
+
+# set the number of thread for parallel computing (maximum is 48)
+
+wanted_num_threads    8
+
+# set the path (relative or not) of image files. The number is set in a c-style printf format
+
+image_name ../ImageData/TEST%02d.tiff
+
+# set the initial positions of the points to be tracked (followed)
+#
+# 3 possibles cases : 
+#
+#   i) user define points in a file
+#  ii) automatic generation of points (grid)
+# iii) points from a previous correlation - re-start procedure
+#
+#
+# ====== case i)
+# The path (relative or not) of the file with the following content:
+#
+# l1 -> number_of_grains
+# l2 ... ln -> [ refcoordx(pixel,integer) refcoordy(pixel,integer) refrot(radian,real) radius(pixel,integer) ]
+#
+
+grains_to_follow ./recentered.txt
+ 
+# ====== case ii)
+# -> rectangular grid
+# make_grid xmin xmax ymin ymax nx ny alea
+# make_grid 100  1000 100  1000 10 10 5 !a grid of 10 x 10 points
+# -> circular grid
+# make_grid_circular 	x_center	y_center	Radius	Angle_Increment
+# make_grid_circular	512	512	300	0.025
+ 
+# ====== case iii)
+# restart_file ./dic_out_290.txt ! restart = ibeg - 1
+
+#
+# Image flow
+#
+
+iref                     1     ! Reference image
+ibeg                     1     ! Number of the first image
+iend                     2     ! Number of the last image
+iinc                     1     ! Increment between the images processed
+iraz                     20000 ! NOT YET TESTED. Impose iraz > iend
+
+# accounts for grain rotation
+# rotations: 1 for yes, 0 for no
+
+rotations 1
+
+# subpixel parameters
+#
+
+subpixel     1            ! 1 for subpixel computation, 0 for pixel computation
+subpix_tol   1.e-8        ! tolerance criteria for powell minimisation (1.e-8 is good)
+initial_direction_dx 0.01 ! initial value for powell minimisation, X translation
+initial_direction_dy 0.01 ! initial value for powell minimisation, Y translation
+initial_direction_dr 0.01 ! initial value for powell minimisation, alpha rotation
+image_interpolator cubic  ! linear, cubic or quintic
+
+overflow_stiffness 0.0 ! This parameter tune the 'force' that limit the maximum displacement variation allowed for subpixel  
+subpix_displacement_max 3.0 ! Maximum displacement variation allowed for subpixel
+
+
+# Rescue level and neighbour detection
+# rescue_level:       2 for super_rescue, 1 for rescue only, 0 for no rescue, and with negative value
+#                     even the pixel-tracking will not be done
+# use_neighbour_list: 1 for yes, 0 for no
+
+rescue_level        2
+use_neighbour_list  1
+
+# Search zone for the first attempt (without sub-pixel) 
+# left / right / up / down: positive integer values in pixel
+# inc_rot: decimal value expressed in radian
+# num_rot: positive integer value. The total tested rotations is (2 * num_rot + 1)
+
+search_zone.left                  6 
+search_zone.right                 6
+search_zone.up                    6
+search_zone.down                  6
+search_zone.inc_rot               0.0454
+search_zone.num_rot               6 
+
+# Search zone for the grain rescue (without sub-pixel) 
+
+NCC_min                           0.8
+search_zone_rescue.left           30
+search_zone_rescue.right          30
+search_zone_rescue.up             30
+search_zone_rescue.down           30
+search_zone_rescue.inc_rot        0.0454
+search_zone_rescue.num_rot        69
+
+# Search zone for the grain super rescue (without sub-pixel) 
+
+NCC_min_super                     0.7
+search_zone_super_rescue.left     200
+search_zone_super_rescue.right    200
+search_zone_super_rescue.up       200
+search_zone_super_rescue.down     200
+search_zone_super_rescue.inc_rot  0.045
+search_zone_super_rescue.num_rot  69
+
+
+!=========================================================================================
+!
+! Shape of the pattern to be correlated
+!
+! pattern  rect 10 10 
+! pattern file ../Pattern.data
+! pattern ring 15 25
+
+pattern  circ 10   ! Pattern en forme de disque. Rayon = entier en pixels

@@ -1,0 +1,63 @@
+procedure correction_distortion
+
+image_name ../ImageData/Disto_%d.tiff
+
+image_numbers_corrDisto  6   1 2        3        4        5        6
+imposedDisplApprox_corrDisto   6 0      13 0.5   16 -22   7 -22    -4 -22
+!                              ------   ----     ------   ------   -------
+!                              1->2     1->3     1->4     1->5     1->6
+
+!image_numbers_corrDisto  2     1     4
+!imposedDisplApprox_corrDisto         16 -22
+!                                     ------
+!                                     1->4
+
+!          xmin  xmax  ymin  ymax   nx   ny   alea 
+make_grid  74    2507  75    1865   14   14   0
+
+equiProj_dist_range 500  800 ! min and max distances included in equi-projectivity criterion
+
+pattern rect 23 23    ! half width, half height
+
+
+! for subpixel
+!
+image_interpolator cubic
+
+! for parallel computing
+!
+wanted_num_threads       4
+
+! Search zone arround estimated position of translated point  
+!
+NCC_min                  0.8   ! Points found with less than this value are not part of the optimisation
+search_zone.left         8     !
+search_zone.right        8     !
+search_zone.up           8     !
+search_zone.down         8     !
+search_zone.inc_rot      0.045 ! Radians
+search_zone.num_rot      0     ! 
+
+! Initial guesses for distortion parameters
+!
+xc_corrDistor   -1.  ! x coordinate of the centre of distortion. Negative number means 'half the image width'
+yc_corrDistor   -1.  ! y coordinate of the centre of distortion. Negative number means 'half the image height'
+K1_corrDistor    0.  ! 1st parameter for radial distortion 
+K2_corrDistor    0.  ! 2nd parameter for radial distortion
+K3_corrDistor    0.  ! 3rd parameter for radial distortion
+P1_corrDistor    0.  ! 1st parameter for tangential distortion
+P2_corrDistor    0.  ! 2nd parameter for tangential distortion
+P3_corrDistor    0.  ! 3rd parameter for tangential distortion
+
+
+! Initial perturbation for distortion parameters -- IF YOU WANT TO CANCEL A PARAMETER, USE 0
+!
+dxc_corrDistor     1e-5
+dyc_corrDistor     1e-5
+dK1_corrDistor     1e-5
+dK2_corrDistor     1e-5 
+dK3_corrDistor     1e-5
+dP1_corrDistor     1e-5
+dP2_corrDistor     1e-5
+dP3_corrDistor     1e-5
+
