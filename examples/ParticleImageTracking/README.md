@@ -4,6 +4,6 @@ This is a basic example for the Particle Image Tracking procedure.
 Supposing the compilation went well, the example can be excecuted that way from the current folder:
 
 ```sh
-../src/run PIT.txt
+../../src/ptracker commands.txt
 ```
 

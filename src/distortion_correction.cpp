@@ -83,9 +83,7 @@ void ptracker::precompute_paires() {
   std::cout << "Number of points for equiprojectivity computations: " << grain_pairs.size() << std::endl;
 }
 
-// La fonction a minimiser si on veut utiliser le critère d'équiprojectivité.
-// Pour il faut que les déplacements entre les image correspondent réellement à un mouvement
-// de solide rigide (déplacement d'une grande plaque).
+// The function to minimise if we want to use the equiprojectivity criterion.
 double ptracker::disto_to_minimize_Equiproj(std::vector<double> &X) {
   double A1x, A1y, B1x, B1y; // undistorted positions on image 1
   double A2x, A2y, B2x, B2y; // undistorted positions on image 2
@@ -132,8 +130,10 @@ double ptracker::disto_to_minimize_Equiproj(std::vector<double> &X) {
 
 // The procedure to correct the image distortions
 void ptracker::correction_distortion() {
-  std::cout << "*** PROCEDURE CORRECTION OF DISTORTION ***" << std::endl;
-
+  std::cout << '\n';
+  std::cout << "*** PROCEDURE CORRECTION OF DISTORTION ***" << '\n';
+  std::cout << std::endl;
+  
   // Reserve memory
   dx_corrDisto.resize(image_numbers_corrDisto.size());
   dy_corrDisto.resize(image_numbers_corrDisto.size());
@@ -175,7 +175,7 @@ void ptracker::correction_distortion() {
     }
 
     // ======== Performing a DIC
-    fprintf(stdout, "Follow %d grains ... (from image number %d to number %d)\n", num_grains, iref,
+    fprintf(stdout, "Follow %d grains... (from image number %d to number %d)\n", num_grains, iref,
             image_numbers_corrDisto[i_image]);
     fflush(stdout);
     tbeg = get_time();
@@ -194,7 +194,7 @@ void ptracker::correction_distortion() {
     // NO RESCUE IS ATTEMPTED !!?
 
     // ======== Sub-pixel
-    fprintf(stdout, "Sub-pixel resolution ... \n");
+    fprintf(stdout, "Sub-pixel resolution... \n");
     fflush(stdout);
     tbeg = get_time();
 
@@ -303,9 +303,9 @@ void ptracker::correction_distortion() {
   logfile << "A2_corrParallax     " << disto_parameters[13] << std::endl;
 
   std::cout << std::scientific << std::setprecision(15);
-  std::cout << "Initial distorsion index " << index_ini << '\n';
-  std::cout << "  Final distorsion index " << index_end << '\n';
-  std::cout << "              Index gain " << index_gain << " (>1 is good)" << '\n';
+  std::cout << "    Initial distorsion index " << index_ini << '\n';
+  std::cout << "      Final distorsion index " << index_end << '\n';
+  std::cout << "gain (index_ini / index_end) " << index_gain << " (>1 is good)" << '\n';
   std::cout << "xc_corrDistor " << disto_parameters[0] << '\n';
   std::cout << "yc_corrDistor " << disto_parameters[1] << '\n';
   std::cout << "K1_corrDistor " << disto_parameters[2] << '\n';
@@ -322,6 +322,12 @@ void ptracker::correction_distortion() {
   std::cout << "A2_corrParallax     " << disto_parameters[13] << std::endl;
 
   // === CREATE DATA FILE FOR PLOTTING THE FIELD OF CORRECTION DISPLACEMENTS ===
+  // in gnuplot
+  //
+  // ampl = 10.0
+  // set size ratio -1
+  // plot "errors.txt" u 1:(-$2):($3*ampl):(-$4*ampl) w vec lc 3 notitle
+  
   std::ofstream errorFile("errors.txt");
   double xerrormax = -1e20;
   double yerrormax = -1e20;
@@ -367,6 +373,7 @@ void ptracker::correction_distortion() {
 
   // === CREATE DATA FILE FOR PLOTTING THE (UN)DISTORTED FRAME ===
   // in gnuplot
+  //
   // ampl = 10.0
   // set size ratio -1
   // plot "distobox.txt" u 1:(-$2) w l lw 2 lc 1 notitle, "" u ($1+$3*ampl):(-$2-$4*ampl) w l lw 2 lc 1 notitle

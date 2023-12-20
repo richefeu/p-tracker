@@ -19,7 +19,7 @@
 ptracker::ptracker() {
   imageData.resize(2);
 
-  disto_parameters.resize(12);
+  disto_parameters.resize(14);
   disto_parameters[0] = -1.0;
   disto_parameters[1] = -1.0;
   disto_parameters[2] = 0.0;
@@ -35,7 +35,7 @@ ptracker::ptracker() {
   disto_parameters[12] = 0.0;
   disto_parameters[13] = 0.0; 
   
-  disto_parameters_perturb.resize(12);
+  disto_parameters_perturb.resize(14);
   disto_parameters_perturb[0] = 1e-6;
   disto_parameters_perturb[1] = 1e-6;
   disto_parameters_perturb[2] = 1e-6;
@@ -222,6 +222,7 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
   if (DemosaicModelName.find(DemosaicModel) != DemosaicModelName.end()) {
     std::cout << " (" << DemosaicModelName[DemosaicModel] << ")";
   }
+  
   std::cout << std::endl;
 
   // Get data about the image shot
@@ -232,12 +233,14 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
   imageData[i].shot_order = iProcessor.imgdata.other.shot_order;
   imageData[i].dateTime = timestamp2string(iProcessor.imgdata.other.timestamp);
 
-  std::cout << " iso_speed = " << imageData[i].iso_speed << std::endl;
-  std::cout << "   shutter = " << imageData[i].shutter << std::endl;
-  std::cout << "  aperture = " << imageData[i].aperture << std::endl;
-  std::cout << " focal_len = " << imageData[i].focal_len << std::endl;
-  std::cout << "shot_order = " << imageData[i].shot_order << std::endl;
-  std::cout << "  dateTime = " << imageData[i].dateTime << std::endl;
+  std::cout << " Camera manufacturer = " << iProcessor.imgdata.idata.make << std::endl;
+  std::cout << "        Camera model = " << iProcessor.imgdata.idata.model << std::endl;
+  std::cout << "           iso_speed = " << imageData[i].iso_speed << std::endl;
+  std::cout << "             shutter = " << imageData[i].shutter << std::endl;
+  std::cout << "            aperture = " << imageData[i].aperture << std::endl;
+  std::cout << "           focal_len = " << imageData[i].focal_len << std::endl;
+  std::cout << "          shot_order = " << imageData[i].shot_order << std::endl;
+  std::cout << "            dateTime = " << imageData[i].dateTime << std::endl;
 
   if (first_time) {
     dimx = iProcessor.imgdata.sizes.width;
