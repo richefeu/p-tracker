@@ -26,8 +26,7 @@ endif
 
 # All the files that are part of the source code
 SOURCES = p-tracker.cpp distortion_correction.cpp \
-          grain_type_2D.cpp NCC_optimizer_functor.cpp interpol.cpp \
-					EquiProj_optimizer_functor.cpp
+          grain_type_2D.cpp NCC_optimizer_functor.cpp interpol.cpp 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 %.o:%.cpp

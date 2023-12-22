@@ -33,8 +33,8 @@ ptracker::ptracker() {
   disto_parameters[10] = 0.0;
   disto_parameters[11] = 0.0;
   disto_parameters[12] = 0.0;
-  disto_parameters[13] = 0.0; 
-  
+  disto_parameters[13] = 0.0;
+
   disto_parameters_perturb.resize(14);
   disto_parameters_perturb[0] = 1e-6;
   disto_parameters_perturb[1] = 1e-6;
@@ -83,7 +83,7 @@ void ptracker::read_image(int i, int num, bool first_time) {
 }
 
 // Function that uses libtiff to read an image, and to compute and store gray levels in a c-style table.
-void ptracker::read_tiff_image(int i, const char *name, bool first_time) {
+void ptracker::read_tiff_image(int i, const char* name, bool first_time) {
   if (i < 0 || i > 1) {
     std::cerr << "@read_tiff_image, i = " << i << std::endl;
   }
@@ -91,7 +91,7 @@ void ptracker::read_tiff_image(int i, const char *name, bool first_time) {
   std::cout << "Read image named " << name << std::endl;
 
   // http://41j.com/blog/2011/10/simple-libtiff-example/
-  TIFF *tif = TIFFOpen(name, "r");
+  TIFF* tif = TIFFOpen(name, "r");
 
   if (!tif) {
     std::cerr << "@read_tiff_image, cannot read tiff file named '" << name << "'" << std::endl;
@@ -99,9 +99,9 @@ void ptracker::read_tiff_image(int i, const char *name, bool first_time) {
   }
   uint32_t w, h;
   size_t npixels;
-  uint32_t *raster;
+  uint32_t* raster;
 
-  char *infobuf;
+  char* infobuf;
   if (TIFFGetField(tif, TIFFTAG_DATETIME, &infobuf))
     imageData[i].dateTime = std::string(infobuf);
   else
@@ -119,7 +119,7 @@ void ptracker::read_tiff_image(int i, const char *name, bool first_time) {
   std::cout << "TIFF image size: " << w << "x" << h << std::endl;
   npixels = w * h;
 
-  raster = (uint32_t *)_TIFFmalloc(npixels * sizeof(uint32_t));
+  raster = (uint32_t*)_TIFFmalloc(npixels * sizeof(uint32_t));
   if (raster != NULL) {
     if (!TIFFReadRGBAImage(tif, w, h, raster, 0)) {
       std::cerr << "@read_tiff_image, cannot read tiff file named '" << name << "'" << std::endl;
@@ -203,7 +203,7 @@ void ptracker::read_tiff_image(int i, const char *name, bool first_time) {
 // il faut voir ici http://www.libraw.org/node/555 pour voir comment proceder
 // ici aussi :
 // http://stackoverflow.com/questions/22355491/libraw-is-making-my-images-too-bright-compared-to-nikons-own-converter
-void ptracker::read_raw_image(int i, const char *name, bool first_time) {
+void ptracker::read_raw_image(int i, const char* name, bool first_time) {
   if (i < 0 || i > 1) {
     std::cerr << "@read_raw_image, i = " << i << std::endl;
   }
@@ -222,7 +222,7 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
   if (DemosaicModelName.find(DemosaicModel) != DemosaicModelName.end()) {
     std::cout << " (" << DemosaicModelName[DemosaicModel] << ")";
   }
-  
+
   std::cout << std::endl;
 
   // Get data about the image shot
@@ -264,7 +264,7 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
   uint16_t MinGray = 65535, MaxGray = 0;
   double fact = 1.0 / (double)(iProcessor.imgdata.color.maximum);
 
-  if (DemosaicModel >= 0) { // That are those of libRaw
+  if (DemosaicModel >= 0) {  // That are those of libRaw
     iProcessor.imgdata.params.user_qual = DemosaicModel;
     iProcessor.dcraw_process();
     double r, g, b;
@@ -281,10 +281,8 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
         // Store in a c-style table, and convert in graylevel
         image[i][x][y] = (uint16_t)(iProcessor.imgdata.color.maximum * (0.299 * r + 0.587 * g + 0.114 * b));
 
-        if (image[i][x][y] > MaxGray)
-          MaxGray = image[i][x][y];
-        if (image[i][x][y] < MinGray)
-          MinGray = image[i][x][y];
+        if (image[i][x][y] > MaxGray) MaxGray = image[i][x][y];
+        if (image[i][x][y] < MinGray) MinGray = image[i][x][y];
       }
     }
   } else if (DemosaicModel == -1) {
@@ -305,10 +303,8 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
         deraster += 0.25 * (double)(iProcessor.imgdata.rawdata.raw_image[(xoffset + x) + width * (yoffset + y + 1)]);
 
         image[i][x][y] = (unsigned int)floor(deraster);
-        if (image[i][x][y] > MaxGray)
-          MaxGray = image[i][x][y];
-        if (image[i][x][y] < MinGray)
-          MinGray = image[i][x][y];
+        if (image[i][x][y] > MaxGray) MaxGray = image[i][x][y];
+        if (image[i][x][y] < MinGray) MinGray = image[i][x][y];
       }
     }
   } else if (DemosaicModel == -2) {
@@ -340,13 +336,11 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
             0.0625 * (double)(iProcessor.imgdata.rawdata.raw_image[(xoffset + x + 1) + width * (yoffset + y + 1)]);
 
         image[i][x][y] = (unsigned int)floor(deraster);
-        if (image[i][x][y] > MaxGray)
-          MaxGray = image[i][x][y];
-        if (image[i][x][y] < MinGray)
-          MinGray = image[i][x][y];
+        if (image[i][x][y] > MaxGray) MaxGray = image[i][x][y];
+        if (image[i][x][y] < MinGray) MinGray = image[i][x][y];
       }
     }
-  } else if (DemosaicModel == -20) { // for achromatic raw images (no demosaicing)
+  } else if (DemosaicModel == -20) {  // for achromatic raw images (no demosaicing)
 
     int width = iProcessor.imgdata.sizes.raw_width;
     int yoffset = iProcessor.imgdata.sizes.top_margin;
@@ -355,10 +349,8 @@ void ptracker::read_raw_image(int i, const char *name, bool first_time) {
     for (int x = 0; x < dimx; ++x) {
       for (int y = 0; y < dimy; ++y) {
         image[i][x][y] = iProcessor.imgdata.rawdata.raw_image[(xoffset + x) + width * (yoffset + y)];
-        if (image[i][x][y] > MaxGray)
-          MaxGray = image[i][x][y];
-        if (image[i][x][y] < MinGray)
-          MinGray = image[i][x][y];
+        if (image[i][x][y] > MaxGray) MaxGray = image[i][x][y];
+        if (image[i][x][y] < MinGray) MinGray = image[i][x][y];
       }
     }
   }
@@ -431,7 +423,7 @@ double ptracker::get_time() {
 void ptracker::particle_tracking() {
   std::cout << "*** PROCEDURE PARTICLE IMAGE TRACKING ***" << std::endl;
 
-  read_image(im_index_ref, iref, true); // Read reference image
+  read_image(im_index_ref, iref, true);  // Read reference image
 
   double tbeg;
   int igrain;
@@ -483,10 +475,9 @@ void ptracker::particle_tracking() {
       progress = 0;
 #pragma omp parallel for schedule(dynamic)
       for (igrain = 0; igrain < num_grains; igrain++) {
-        grain[igrain].reset();  // reset les NCC
-        grain[igrain].backup(); // sauvegarde les dx, dy et drot
-        if (grain[igrain].masked)
-          continue;
+        grain[igrain].reset();   // reset les NCC
+        grain[igrain].backup();  // sauvegarde les dx, dy et drot
+        if (grain[igrain].masked) continue;
         follow_pattern_pixel(igrain);
 #pragma omp critical
         { loadbar(++progress, grain.size()); }
@@ -499,8 +490,7 @@ void ptracker::particle_tracking() {
 
     // According to a minimum value of NCC, a first rescue is attempted
     if (rescue_level >= 1) {
-      if (num_to_be_rescued > 0)
-        std::cout << "Try to rescue " << num_to_be_rescued << " grains" << std::endl;
+      if (num_to_be_rescued > 0) std::cout << "Try to rescue " << num_to_be_rescued << " grains" << std::endl;
 
       tbeg = get_time();
 
@@ -526,8 +516,7 @@ void ptracker::particle_tracking() {
           fprintf(stdout, "[\033[31mFAIL\033[0m]\n");
       }
 
-      if (num_to_be_rescued > 0)
-        std::cout << "[rescue DONE in " << get_time() - tbeg << " seconds]" << std::endl;
+      if (num_to_be_rescued > 0) std::cout << "[rescue DONE in " << get_time() - tbeg << " seconds]" << std::endl;
     }
 
     // According to a minimum value of NCC, a last super_rescue is attempted
@@ -595,7 +584,7 @@ void ptracker::particle_tracking() {
     save_grains(num_image);
 
     // Change reference (Not yet tested!!!)
-    if (num_image - iref >= iraz) { // equal in fact!
+    if (num_image - iref >= iraz) {  // equal in fact!
       std::cout << '\n';
       std::cout << "***********************************************\n\n";
       std::cout << " Changing reference image from " << iref << " to " << num_image << "\n\n";
@@ -603,7 +592,7 @@ void ptracker::particle_tracking() {
 
       int tmp = im_index_current;
       im_index_current = im_index_ref;
-      im_index_ref = tmp; // Swap the first index for the array 'image'
+      im_index_ref = tmp;  // Swap the first index for the array 'image'
       double actual_pos;
       for (igrain = 0; igrain < num_grains; igrain++) {
         actual_pos = (double)(grain[igrain].refcoord_xpix) + grain[igrain].dx;
@@ -618,12 +607,12 @@ void ptracker::particle_tracking() {
         grain[igrain].drot = 0.0;
       }
       iref = num_image;
-      require_precomputations = true; // so that precomputations are updated
+      require_precomputations = true;  // so that precomputations are updated
     }
   }
 }
 
-void ptracker::rotate_pixel_pattern(int igrain, int i, double c, double s, int *xpixel, int *ypixel) {
+void ptracker::rotate_pixel_pattern(int igrain, int i, double c, double s, int* xpixel, int* ypixel) {
   // Note that the y is oriented downwards, which is why the trigonometric rotation is the opposite
   double xpix = c * grain[igrain].pattern[i].dx + s * grain[igrain].pattern[i].dy;
   double ypix = -s * grain[igrain].pattern[i].dx + c * grain[igrain].pattern[i].dy;
@@ -661,7 +650,7 @@ void ptracker::do_precomputations() {
       diffC0 = (double)image[im_index_ref][xpixel0][ypixel0] - grain[igrain].mean0;
       grain[igrain].C0C0 += diffC0 * diffC0;
     }
-  } // Loop over igrain
+  }  // Loop over igrain
 
   require_precomputations = false;
 }
@@ -680,8 +669,8 @@ void ptracker::follow_pattern_pixel(int igrain) {
   double rest_dy = grain[igrain].dy - grain_dy;
   grain[igrain].upix = grain[igrain].vpix = grain[igrain].rot_inc = 0.0;
 
-  double drot;    // Increment test pour l'angle de rotation
-  int upix, vpix; // Increment test pour la translation
+  double drot;     // Increment test pour l'angle de rotation
+  int upix, vpix;  // Increment test pour la translation
 
   double mean1, C0C1, C1C1;
 
@@ -733,9 +722,9 @@ void ptracker::follow_pattern_pixel(int igrain) {
           best_drot = drot;
         }
 
-      } // Loop vpix
-    }   // Loop upix
-  }     // Loop rot
+      }  // Loop vpix
+    }    // Loop upix
+  }      // Loop rot
 
   grain[igrain].NCC = best_NCC;
   grain[igrain].NCC_rescue = best_NCC;
@@ -765,8 +754,8 @@ void ptracker::follow_pattern_rescue_pixel(int igrain) {
   double rest_dx = grain[igrain].dx - grain_dx;
   double rest_dy = grain[igrain].dy - grain_dy;
 
-  double drot;    // Increment test pour l'angle de rotation
-  int upix, vpix; // Increment test pour la translation
+  double drot;     // Increment test pour l'angle de rotation
+  int upix, vpix;  // Increment test pour la translation
 
   double mean1, C0C1, C1C1;
 
@@ -783,8 +772,8 @@ void ptracker::follow_pattern_rescue_pixel(int igrain) {
 
   // We define a list of relative coordinates used to search igrain in the image 1.
   // To do that, the list of neighbour of igrain is used
-  const int nbmax = (search_zone_rescue.right + search_zone_rescue.left + 1) *
-                    (search_zone_rescue.up + search_zone_rescue.down + 1);
+  const int nbmax =
+      (search_zone_rescue.right + search_zone_rescue.left + 1) * (search_zone_rescue.up + search_zone_rescue.down + 1);
   std::vector<relative_coord_type> rescue_allowed(nbmax);
 
   int radi_i = (int)grain[igrain].radius_pix;
@@ -807,7 +796,7 @@ void ptracker::follow_pattern_rescue_pixel(int igrain) {
             double dstx = xcentre_j - xcentre_i;
             double dsty = ycentre_j - ycentre_i;
             double dist2 = dstx * dstx + dsty * dsty;
-            double sum_radii = (radi_i + radi_j) * 0.9; // only 90% of the radius declared
+            double sum_radii = (radi_i + radi_j) * 0.9;  // only 90% of the radius declared
             double sum_radii2 = sum_radii * sum_radii;
             if (dist2 < sum_radii2) {
               is_allowed = false;
@@ -873,8 +862,8 @@ void ptracker::follow_pattern_rescue_pixel(int igrain) {
         best_drot = drot;
       }
 
-    } // Loop i_allowed
-  }   // Loop rot
+    }  // Loop i_allowed
+  }    // Loop rot
 
   grain[igrain].NCC_rescue = best_NCC;
 
@@ -903,8 +892,8 @@ void ptracker::follow_pattern_super_rescue_pixel(int igrain) {
   double rest_dx = grain[igrain].dx - grain_dx;
   double rest_dy = grain[igrain].dy - grain_dy;
 
-  double drot;    // Increment test pour l'angle de rotation
-  int upix, vpix; // Increment test pour la translation
+  double drot;     // Increment test pour l'angle de rotation
+  int upix, vpix;  // Increment test pour la translation
   double mean1, C0C1, C1C1;
 
   int i_allowed;
@@ -944,7 +933,7 @@ void ptracker::follow_pattern_super_rescue_pixel(int igrain) {
             double dstx = xcentre_j - xcentre_i;
             double dsty = ycentre_j - ycentre_i;
             double dist2 = dstx * dstx + dsty * dsty;
-            double sum_radii = (radi_i + radi_j) * 0.9; // only 90% of the radius declared
+            double sum_radii = (radi_i + radi_j) * 0.9;  // only 90% of the radius declared
             double sum_radii2 = sum_radii * sum_radii;
             if (dist2 < sum_radii2) {
               is_allowed = false;
@@ -1011,11 +1000,11 @@ void ptracker::follow_pattern_super_rescue_pixel(int igrain) {
       }
     }
 
-  } // Loop for drot
+  }  // Loop for drot
 
   grain[igrain].NCC_rescue = best_NCC;
 
-  if (best_NCC > NCC_min_super) { // If the super rescue has no effect, then we don't change the movement increment
+  if (best_NCC > NCC_min_super) {  // If the super rescue has no effect, then we don't change the movement increment
     grain[igrain].upix = best_upix - rest_dx;
     grain[igrain].vpix = best_vpix - rest_dy;
     grain[igrain].rot_inc = best_drot;
@@ -1026,7 +1015,7 @@ void ptracker::follow_pattern_super_rescue_pixel(int igrain) {
   }
 }
 
-double ptracker::NCC_to_minimize_xyR(std::vector<double> &X) {
+double ptracker::NCC_to_minimize_xyR(std::vector<double>& X) {
 
 #if defined(_OPENMP)
   int thread_id = omp_get_thread_num();
@@ -1045,7 +1034,7 @@ double ptracker::NCC_to_minimize_xyR(std::vector<double> &X) {
   double xpix1 = (double)grain[igrain].refcoord_xpix + (double)grain[igrain].dx + X[0];
   double ypix1 = (double)grain[igrain].refcoord_ypix + (double)grain[igrain].dy + X[1];
 
-  double rot = grain[igrain].drot + X[2]; // from refrot which can be non-zero
+  double rot = grain[igrain].drot + X[2];  // from refrot which can be non-zero
   double c1 = cos(rot), s1 = sin(rot);
 
   std::vector<double> interpol_values;
@@ -1099,8 +1088,8 @@ double ptracker::NCC_to_minimize_xyR(std::vector<double> &X) {
 }
 
 void ptracker::follow_pattern_subpixel_xyR(int igrain) {
-  std::vector<double> X(3);  // The parameters to be optimized
-  std::vector<double> DX(3); // The initial variation of the params in the optimisation process
+  std::vector<double> X(3);   // The parameters to be optimized
+  std::vector<double> DX(3);  // The initial variation of the params in the optimisation process
 
   // === Initial guess of the subpixel part of displacement and rotation
   X[0] = X[1] = X[2] = 0.0;
@@ -1158,7 +1147,7 @@ void ptracker::find_neighbours(int igrain) {
   }
 }
 
-int ptracker::init(int argc, char *argv[]) {
+int ptracker::init(int argc, char* argv[]) {
 
   if (argc > 2) {
     fprintf(stderr, "Usage: %s command_file\n", argv[0]);
@@ -1194,12 +1183,12 @@ int ptracker::init(int argc, char *argv[]) {
       header();
       read_data(argv[1]);
     }
-  } else { // tracker has been invocked by double-clics or without arguments
+  } else {  // tracker has been invocked by double-clics or without arguments
     header();
     read_data("commands.txt");
   }
 
-  if (rotations == 0) { // to be replaced by if (search_zone_super_rescue.inc_rot == 0.0 || ...) (FIXME)
+  if (rotations == 0) {  // to be replaced by if (search_zone_super_rescue.inc_rot == 0.0 || ...) (FIXME)
     std::cout << "Rotation are NOT TRACKED!" << std::endl;
     // Il faut choisir une valeur non nulle pour inc_rot sinon -> boucle infinie
     search_zone_super_rescue.inc_rot = 1.0;
@@ -1221,7 +1210,7 @@ int ptracker::init(int argc, char *argv[]) {
 }
 
 // Lecture des positions des grains "tracked"
-int ptracker::read_grains(const char *name, bool ptracker_format) {
+int ptracker::read_grains(const char* name, bool ptracker_format) {
   std::ifstream grain_file(name);
   if (!grain_file) {
     std::cerr << "@ptracker::read_grains, cannot open file " << name << std::endl;
@@ -1229,7 +1218,6 @@ int ptracker::read_grains(const char *name, bool ptracker_format) {
   }
 
   grain_file >> num_grains;
-  // SHOW(num_grains);
 
   if (!grain.empty()) {
     grain.clear();
@@ -1244,7 +1232,7 @@ int ptracker::read_grains(const char *name, bool ptracker_format) {
   }
   to_be_super_rescued.resize(num_grains);
 
-  if (ptracker_format == true) { // File with the same format as 'dic_out_x.txt'
+  if (ptracker_format == true) {  // File with the same format as 'dic_out_x.txt'
     for (int i = 0; i < num_grains; i++) {
       // clang-format off
       grain_file >> grain[i].refcoord_xpix  // 1
@@ -1262,7 +1250,7 @@ int ptracker::read_grains(const char *name, bool ptracker_format) {
                  >> grain[i].NCC_subpix;    // 13
       // clang-format on
     }
-  } else { // Format plus simple
+  } else {  // Format plus simple
     double radius_pix_real;
     double xpix_real, ypix_real;
     for (int i = 0; i < num_grains; i++) {
@@ -1284,7 +1272,7 @@ int ptracker::read_grains(const char *name, bool ptracker_format) {
   }
 
   // Try to find the 1G2E related datasets
-  //frame.try_to_plug(this);
+  // frame.try_to_plug(this);
 
   return 1;
 }
@@ -1295,8 +1283,7 @@ void ptracker::make_grid(double xmin, double xmax, double ymin, double ymax, int
 
   // Memory allocation
   num_grains = nx * ny;
-  if (!grain.empty())
-    grain.clear();
+  if (!grain.empty()) grain.clear();
   grain.resize(num_grains);
   if (!to_be_rescued.empty()) {
     to_be_rescued.clear();
@@ -1312,7 +1299,7 @@ void ptracker::make_grid(double xmin, double xmax, double ymin, double ymax, int
   int i = 0;
   for (int iy = 0; iy < ny; iy++) {
     for (int ix = 0; ix < nx; ix++) {
-      double angle = (double)rand() / (double)RAND_MAX * (2.0 * M_PI); // angle in range [0 2PI]
+      double angle = (double)rand() / (double)RAND_MAX * (2.0 * M_PI);  // angle in range [0 2PI]
       double alea = (double)rand() / (double)RAND_MAX * aleaMax;
       grain[i].refcoord_xpix = xmin + ix * dx + (int)std::round(alea * cos(angle));
       grain[i].refcoord_ypix = ymin + iy * dy + (int)std::round(alea * sin(angle));
@@ -1323,7 +1310,7 @@ void ptracker::make_grid(double xmin, double xmax, double ymin, double ymax, int
   }
 }
 
-int ptracker::save_grains(const char *name, int num, bool simpleVersion) {
+int ptracker::save_grains(const char* name, int num, bool simpleVersion) {
   std::ofstream grain_file_out(name);
   if (!grain_file_out) {
     std::cerr << "Cannot open file " << name << std::endl;
@@ -1398,7 +1385,7 @@ void ptracker::make_rect_pattern(int igrain, int half_width_pix, int half_height
 
 void ptracker::make_circ_pattern(int igrain, int radius_pix) {
   // Memory allocation
-  int dim = 4 * radius_pix * radius_pix; // surdim !
+  int dim = 4 * radius_pix * radius_pix;  // surdim !
   grain[igrain].pattern.resize(dim);
   grain[igrain].pattern0_rotated.resize(dim);
   grain[igrain].pattern1_rotated.resize(dim);
@@ -1422,7 +1409,7 @@ void ptracker::make_circ_pattern(int igrain, int radius_pix) {
 
 void ptracker::make_ring_pattern(int igrain, int radius_IN_pix, int radius_OUT_pix) {
   // Memory allocation
-  int dim = 4 * radius_OUT_pix * radius_OUT_pix; // more than necessary!
+  int dim = 4 * radius_OUT_pix * radius_OUT_pix;  // more than necessary!
   grain[igrain].pattern.resize(dim);
   grain[igrain].pattern0_rotated.resize(dim);
   grain[igrain].pattern1_rotated.resize(dim);
@@ -1453,7 +1440,7 @@ void ptracker::make_ring_pattern(int igrain, int radius_IN_pix, int radius_OUT_p
 //		xrel yrel
 // 	}
 // }
-void ptracker::make_custom_pattern(const char *name) {
+void ptracker::make_custom_pattern(const char* name) {
   std::ifstream pattern_file(name);
   if (!pattern_file) {
     fprintf(stderr, "Cannot open file %s\n", name);
@@ -1497,7 +1484,7 @@ void ptracker::mask_rect(int xmin, int xmax, int ymin, int ymax) {
 }
 
 // This function reads the command file
-int ptracker::read_data(const char *name) {
+int ptracker::read_data(const char* name) {
   std::ifstream command_file(name);
   if (!command_file) {
     std::cerr << "Cannot open file " << name << std::endl;
@@ -1563,6 +1550,20 @@ int ptracker::read_data(const char *name) {
       command_file >> subpixel;
     } else if (token == "rotations") {
       command_file >> rotations;
+    } else if (token == "optim_algo") {
+      std::string keyword;
+      command_file >> keyword;
+      if (keyword == "POWELL") {
+        optim_algo = POWELL;
+      } else if (keyword == "POWELL_ITER") {
+        optim_algo = POWELL_ITER;
+      } else if (keyword == "LEVMAR") {
+        optim_algo = LEVMAR;
+      } else {
+        std::cout << "WARNING, keyword " << keyword << " is unknown for optim_algo\n";
+      }
+    } else if (token == "powell_num_iter") {
+      command_file >> powell_num_iter;
     }
 
     else if (token == "num_neighbour_max") {
@@ -1653,8 +1654,7 @@ int ptracker::read_data(const char *name) {
         command_file >> radius;
         // Same pattern for each grain
         for (int i = 0; i < num_grains; i++)
-          if (targetRadiusPattern < 0.0 || grain[i].radius_pix == targetRadiusPattern)
-            make_circ_pattern(i, radius);
+          if (targetRadiusPattern < 0.0 || grain[i].radius_pix == targetRadiusPattern) make_circ_pattern(i, radius);
       } else if (token == "grain_diameter") {
         double radius_reduction, min_radius;
         command_file >> radius_reduction >> min_radius;
@@ -1664,8 +1664,7 @@ int ptracker::read_data(const char *name) {
           if (radius < min_radius) {
             radius = min_radius;
           }
-          if (targetRadiusPattern < 0.0 || grain[i].radius_pix == targetRadiusPattern)
-            make_circ_pattern(i, radius);
+          if (targetRadiusPattern < 0.0 || grain[i].radius_pix == targetRadiusPattern) make_circ_pattern(i, radius);
         }
       } else if (token == "ring") {
         int radius_IN, radius_OUT;
@@ -1742,7 +1741,7 @@ int ptracker::read_data(const char *name) {
       command_file >> disto_parameters[12];
     } else if (token == "A2_corrParallax") {
       command_file >> disto_parameters[13];
-    }  
+    }
 
     else if (token == "dxc_corrDistor") {
       command_file >> disto_parameters_perturb[0];
@@ -1787,22 +1786,19 @@ int ptracker::read_data(const char *name) {
 // Process has done i out of n rounds,
 // and we want a bar of width w and resolution r.
 void ptracker::loadbar(size_t x, size_t n, size_t w) {
-  if ((x != n) && (x % (n / 100 + 1) != 0))
-    return;
+  if ((x != n) && (x % (n / 100 + 1) != 0)) return;
 
   float ratio = x / (float)n;
   size_t c = ratio * w;
 
   std::cerr << std::setw(3) << (size_t)(ratio * 100) << "% |";
-  for (size_t x = 0; x < c; x++)
-    std::cerr << "|";
-  for (size_t x = c; x < w; x++)
-    std::cerr << " ";
+  for (size_t x = 0; x < c; x++) std::cerr << "|";
+  for (size_t x = c; x < w; x++) std::cerr << " ";
   std::cerr << "|\r" << std::flush;
 }
 
 std::string ptracker::timestamp2string(time_t rawtime) {
-  struct tm *timeinfo;
+  struct tm* timeinfo;
   timeinfo = localtime(&rawtime);
   char retChar[256];
   sprintf(retChar, "%s", asctime(timeinfo));
@@ -1815,7 +1811,7 @@ void ptracker::run() {
   }
   if (procedure == "correction_distortion") {
     correction_distortion();
-  } else { // The default procedure
+  } else {  // The default procedure
     particle_tracking();
   }
 }

@@ -17,7 +17,7 @@
 #include "p-tracker.hpp"
 
 // http://en.wikipedia.org/wiki/Distortion_(optics)
-void ptracker::undistor(std::vector<double> &X, const double xd, const double yd, double &xu, double &yu) {
+void ptracker::undistor(std::vector<double>& X, const double xd, const double yd, double& xu, double& yu) {
   double Xc = X[0];
   double Yc = X[1];
   double K1 = X[2];
@@ -60,8 +60,8 @@ void ptracker::undistor(std::vector<double> &X, const double xd, const double yd
   yu = Ycp + S1 * ny1 + S2 * ny2;
 }
 
-// This function constructs pairs of points on a grid that are more than equiProj_dist_min
-// and less than equiProj_dist_max apart.
+// This function constructs pairs of points on a grid that are more than
+// equiProj_dist_min and less than equiProj_dist_max apart.
 void ptracker::precompute_paires() {
   grain_pairs.clear();
 
@@ -83,10 +83,11 @@ void ptracker::precompute_paires() {
   std::cout << "Number of points for equiprojectivity computations: " << grain_pairs.size() << std::endl;
 }
 
+/*
 // The function to minimise if we want to use the equiprojectivity criterion.
-double ptracker::disto_to_minimize_Equiproj(std::vector<double> &X) {
-  double A1x, A1y, B1x, B1y; // undistorted positions on image 1
-  double A2x, A2y, B2x, B2y; // undistorted positions on image 2
+double ptracker::disto_to_minimize_Equiproj(std::vector<double>& X) {
+  double A1x, A1y, B1x, B1y;  // undistorted positions on image 1
+  double A2x, A2y, B2x, B2y;  // undistorted positions on image 2
   double AAx, AAy, BBx, BBy, ABx, ABy, AB;
 
   double func = 0.0;
@@ -94,16 +95,17 @@ double ptracker::disto_to_minimize_Equiproj(std::vector<double> &X) {
     for (size_t il = 0; il < grain_pairs.size(); il++) {
       int igrain = grain_pairs[il].i;
       int jgrain = grain_pairs[il].j;
-      if (NCC_subpix_corrDisto[i_image][igrain] < NCC_min || NCC_subpix_corrDisto[i_image][jgrain] < NCC_min)
-        continue;
+      if (NCC_subpix_corrDisto[i_image][igrain] < NCC_min || NCC_subpix_corrDisto[i_image][jgrain] < NCC_min) continue;
 
-      // undistor(X, (double)(grain[igrain].refcoord_xpix), (double)(grain[igrain].refcoord_ypix), A1x, A1y);
+      // undistor(X, (double)(grain[igrain].refcoord_xpix),
+      // (double)(grain[igrain].refcoord_ypix), A1x, A1y);
       A1x = orig_x[igrain];
       A1y = orig_y[igrain];
       undistor(X, (double)(grain[igrain].refcoord_xpix + dx_corrDisto[i_image][igrain]),
                (double)(grain[igrain].refcoord_ypix + dy_corrDisto[i_image][igrain]), A2x, A2y);
 
-      // undistor(X, (double)(grain[jgrain].refcoord_xpix), (double)(grain[jgrain].refcoord_ypix), B1x, B1y);
+      // undistor(X, (double)(grain[jgrain].refcoord_xpix),
+      // (double)(grain[jgrain].refcoord_ypix), B1x, B1y);
       B1x = orig_x[jgrain];
       B1y = orig_y[jgrain];
       undistor(X, (double)(grain[jgrain].refcoord_xpix + dx_corrDisto[i_image][jgrain]),
@@ -127,13 +129,14 @@ double ptracker::disto_to_minimize_Equiproj(std::vector<double> &X) {
 
   return (func);
 }
+*/
 
 // The procedure to correct the image distortions
 void ptracker::correction_distortion() {
   std::cout << '\n';
   std::cout << "*** PROCEDURE CORRECTION OF DISTORTION ***" << '\n';
   std::cout << std::endl;
-  
+
   // Reserve memory
   dx_corrDisto.resize(image_numbers_corrDisto.size());
   dy_corrDisto.resize(image_numbers_corrDisto.size());
@@ -152,11 +155,11 @@ void ptracker::correction_distortion() {
   }
 
   int igrain;
-  double index_ini, index_end, index_gain;
+  double index_ini = 0.0, index_end = 0.0, index_gain = 0.0;
 
   std::ofstream logfile("corrDisto_log.txt");
 
-  read_image(0, image_numbers_corrDisto[0], true); // Read reference image
+  read_image(0, image_numbers_corrDisto[0], true);  // Read reference image
   iref = image_numbers_corrDisto[0];
   do_precomputations();
   precompute_paires();
@@ -175,7 +178,7 @@ void ptracker::correction_distortion() {
     }
 
     // ======== Performing a DIC
-    fprintf(stdout, "Follow %d grains... (from image number %d to number %d)\n", num_grains, iref,
+    fprintf(stdout, "> Follow %d grains... (from image number %d to number %d)\n", num_grains, iref,
             image_numbers_corrDisto[i_image]);
     fflush(stdout);
     tbeg = get_time();
@@ -189,12 +192,12 @@ void ptracker::correction_distortion() {
       { loadbar(++progress, grain.size()); }
     }
     std::cerr << std::endl;
-    fprintf(stdout, "[DONE in %f seconds]\n", get_time() - tbeg);
+    fprintf(stdout, "< [DONE in %f seconds]\n", get_time() - tbeg);
 
-    // NO RESCUE IS ATTEMPTED !!?
+    // NO RESCUE IS ATTEMPTED !!
 
     // ======== Sub-pixel
-    fprintf(stdout, "Sub-pixel resolution... \n");
+    fprintf(stdout, "> Sub-pixel resolution... \n");
     fflush(stdout);
     tbeg = get_time();
 
@@ -206,33 +209,28 @@ void ptracker::correction_distortion() {
       { loadbar(++progress, grain.size()); }
     }
     std::cerr << std::endl;
-    fprintf(stdout, "[DONE in %f seconds]\n", get_time() - tbeg);
+    fprintf(stdout, "< [DONE in %f seconds]\n", get_time() - tbeg);
 
     int nbFailed = 0;
     for (igrain = 0; igrain < num_grains; igrain++) {
       dx_corrDisto[i_image][igrain] = grain[igrain].dx;
       dy_corrDisto[i_image][igrain] = grain[igrain].dy;
       NCC_subpix_corrDisto[i_image][igrain] = grain[igrain].NCC_subpix;
-      if (grain[igrain].NCC_subpix < NCC_min)
-        nbFailed++;
+      if (grain[igrain].NCC_subpix < NCC_min) nbFailed++;
     }
     std::cout << "Failure rate = " << 100.0 * (double)nbFailed / (double)num_grains << "%" << std::endl;
 
     // save_grains(i_image);
     save_grains(image_numbers_corrDisto[i_image]);
 
-  } // for loop i_image
-  std::cout << "done." << std::endl;
+  }  // for loop i_image
+  std::cout << "Tracking of points done" << std::endl;
 
   // The parameters (initial guess) and perturbations are set by the user
-  if (disto_parameters[0] < 0.0)
-    disto_parameters[0] = 0.5 * (double)dimx;
-  if (disto_parameters[1] < 0.0)
-    disto_parameters[1] = 0.5 * (double)dimy;
-  if (disto_parameters[8] < 0.0)
-    disto_parameters[8] = 0.5 * (double)dimx;
-  if (disto_parameters[9] < 0.0)
-    disto_parameters[9] = 0.5 * (double)dimy;
+  if (disto_parameters[0] < 0.0) disto_parameters[0] = 0.5 * (double)dimx;
+  if (disto_parameters[1] < 0.0) disto_parameters[1] = 0.5 * (double)dimy;
+  if (disto_parameters[8] < 0.0) disto_parameters[8] = 0.5 * (double)dimx;
+  if (disto_parameters[9] < 0.0) disto_parameters[9] = 0.5 * (double)dimy;
 
   // Minimization
   int npairs = grain_pairs.size();
@@ -240,48 +238,249 @@ void ptracker::correction_distortion() {
   std::cout << "Numbers of position pairs used to undistor: " << npairs << std::endl;
   std::cout << "Numbers of image pairs: " << nb_image_pairs << std::endl;
 
-  EquiProj_optimizer func;
-  func.ptrackerObject = this;
-  Powell<EquiProj_optimizer> powell(func, 1e-12);
+  if (optim_algo == POWELL) {
+    
+    // ==================================
+    //.    POWELL
+    // ==================================
 
-  index_ini = disto_to_minimize_Equiproj(disto_parameters) / (double)(nb_image_pairs);
-  std::cout << "initial index = " << index_ini << std::endl;
+    // With this functor, both origin and target points are undistorted
+    struct opti_functor {
+      ptracker* ptrk;
+      double operator()(std::vector<double>& X) {
+        double A1x, A1y, B1x, B1y;  // undistorted positions on image 1
+        double A2x, A2y, B2x, B2y;  // undistorted positions on image 2
+        double AAx, AAy, BBx, BBy, ABx, ABy, AB;
 
-  std::cout << "START minimizing equiprojectivity criterion" << std::endl;
-  std::ofstream convergeFile("convergence.txt");
-  std::cout << std::scientific << std::setprecision(15);
-  convergeFile << std::scientific << std::setprecision(15);
-  std::vector<std::vector<double>> dx0_corrDisto = dx_corrDisto;
-  std::vector<std::vector<double>> dy0_corrDisto = dy_corrDisto;
-  for (int iter = 1; iter <= 5; iter++) {
-    disto_parameters = powell.minimize(disto_parameters, disto_parameters_perturb);
-    double idx = disto_to_minimize_Equiproj(disto_parameters) / (double)(nb_image_pairs);
-    std::cout << "iteration " << iter << ", index = " << idx << std::endl;
-    convergeFile << iter << ' ' << idx << ' ' << disto_parameters[0] << ' ' << disto_parameters[1] << ' '
-                 << disto_parameters[2] << ' ' << disto_parameters[3] << ' ' << disto_parameters[4] << ' '
-                 << disto_parameters[5] << ' ' << disto_parameters[6] << ' ' << disto_parameters[7] << ' '
-                 << disto_parameters[8] << ' ' << disto_parameters[9] << ' ' << disto_parameters[10] << ' '
-                 << disto_parameters[11] << ' ' << disto_parameters[12] << ' ' << disto_parameters[13] << ' '
-                 << std::endl;
+        double valret = 0.0;
+        for (size_t i_image = 1; i_image < ptrk->image_numbers_corrDisto.size(); i_image++) {
+          for (size_t il = 0; il < ptrk->grain_pairs.size(); il++) {
+            int igrain = ptrk->grain_pairs[il].i;
+            int jgrain = ptrk->grain_pairs[il].j;
+            if (ptrk->NCC_subpix_corrDisto[i_image][igrain] < ptrk->NCC_min ||
+                ptrk->NCC_subpix_corrDisto[i_image][jgrain] < ptrk->NCC_min)
+              continue;
 
-    double xu, yu, dxcorr, dycorr;
-    for (int igrain = 0; igrain < num_grains; igrain++) {
-      undistor(disto_parameters, (double)(grain[igrain].refcoord_xpix), (double)(grain[igrain].refcoord_ypix), xu,
-               yu);
-      dxcorr = xu - (double)(grain[igrain].refcoord_xpix);
-      dycorr = yu - (double)(grain[igrain].refcoord_ypix);
-      for (size_t i_image = 1; i_image < image_numbers_corrDisto.size(); i_image++) {
-        dx_corrDisto[i_image][igrain] = dx0_corrDisto[i_image][igrain] + dxcorr;
-        dy_corrDisto[i_image][igrain] = dy0_corrDisto[i_image][igrain] + dycorr;
+            ptrk->undistor(X, (double)(ptrk->grain[igrain].refcoord_xpix), (double)(ptrk->grain[igrain].refcoord_ypix),
+                           A1x, A1y);
+            ptrk->undistor(X, (double)(ptrk->grain[igrain].refcoord_xpix + ptrk->dx_corrDisto[i_image][igrain]),
+                           (double)(ptrk->grain[igrain].refcoord_ypix + ptrk->dy_corrDisto[i_image][igrain]), A2x, A2y);
+
+            ptrk->undistor(X, (double)(ptrk->grain[jgrain].refcoord_xpix), (double)(ptrk->grain[jgrain].refcoord_ypix),
+                           B1x, B1y);
+            ptrk->undistor(X, (double)(ptrk->grain[jgrain].refcoord_xpix + ptrk->dx_corrDisto[i_image][jgrain]),
+                           (double)(ptrk->grain[jgrain].refcoord_ypix + ptrk->dy_corrDisto[i_image][jgrain]), B2x, B2y);
+
+            ABx = B1x - A1x;
+            ABy = B1y - A1y;
+            AB = sqrt(ABx * ABx + ABy * ABy);
+            ABx /= AB;
+            ABy /= AB;
+            BBx = B2x - B1x;
+            BBy = B2y - B1y;
+            AAx = A2x - A1x;
+            AAy = A2y - A1y;
+
+            double err = (ABx * (BBx - AAx)) + (ABy * (BBy - AAy));
+            valret += err * err;
+          }
+        }
+
+        return valret;
       }
-      orig_x[igrain] = xu;
-      orig_y[igrain] = yu;
-    }
-  }
-  std::cout << "END minimizing equiprojectivity criterion\n" << std::endl;
+    };
 
-  index_end = disto_to_minimize_Equiproj(disto_parameters) / (double)(nb_image_pairs);
-  index_gain = index_ini / index_end;
+    opti_functor func;
+    func.ptrk = this;
+    Powell<opti_functor> powell(func, 1e-12);
+    index_ini = func(disto_parameters) / (double)(nb_image_pairs);
+    std::cout << "initial index = " << index_ini << std::endl;
+
+    std::cout << "START minimizing equiprojectivity criterion (with POWELL)" << std::endl;
+    disto_parameters = powell.minimize(disto_parameters, disto_parameters_perturb);
+    std::cout << "END minimizing equiprojectivity criterion (with POWELL)\n" << std::endl;
+
+    index_end = func(disto_parameters) / (double)(nb_image_pairs);
+    index_gain = index_ini / index_end;
+
+  } else if (optim_algo == POWELL_ITER) {
+    
+    // ==================================
+    //.    POWELL_ITER
+    // ==================================
+
+    struct opti_functor {
+      ptracker* ptrk;
+      double operator()(std::vector<double>& X) {
+        double A1x, A1y, B1x, B1y;  // undistorted positions on image 1
+        double A2x, A2y, B2x, B2y;  // undistorted positions on image 2
+        double AAx, AAy, BBx, BBy, ABx, ABy, AB;
+
+        double valret = 0.0;
+        for (size_t i_image = 1; i_image < ptrk->image_numbers_corrDisto.size(); i_image++) {
+          for (size_t il = 0; il < ptrk->grain_pairs.size(); il++) {
+            int igrain = ptrk->grain_pairs[il].i;
+            int jgrain = ptrk->grain_pairs[il].j;
+            if (ptrk->NCC_subpix_corrDisto[i_image][igrain] < ptrk->NCC_min ||
+                ptrk->NCC_subpix_corrDisto[i_image][jgrain] < ptrk->NCC_min)
+              continue;
+
+            A1x = ptrk->orig_x[igrain];
+            A1y = ptrk->orig_y[igrain];
+            ptrk->undistor(X, (double)(ptrk->grain[igrain].refcoord_xpix + ptrk->dx_corrDisto[i_image][igrain]),
+                           (double)(ptrk->grain[igrain].refcoord_ypix + ptrk->dy_corrDisto[i_image][igrain]), A2x, A2y);
+
+            B1x = ptrk->orig_x[jgrain];
+            B1y = ptrk->orig_y[jgrain];
+            ptrk->undistor(X, (double)(ptrk->grain[jgrain].refcoord_xpix + ptrk->dx_corrDisto[i_image][jgrain]),
+                           (double)(ptrk->grain[jgrain].refcoord_ypix + ptrk->dy_corrDisto[i_image][jgrain]), B2x, B2y);
+
+            ABx = B1x - A1x;
+            ABy = B1y - A1y;
+            AB = sqrt(ABx * ABx + ABy * ABy);
+            ABx /= AB;
+            ABy /= AB;
+            BBx = B2x - B1x;
+            BBy = B2y - B1y;
+            AAx = A2x - A1x;
+            AAy = A2y - A1y;
+
+            double err = (ABx * (BBx - AAx)) + (ABy * (BBy - AAy));
+            valret += err * err;
+          }
+        }
+
+        return valret;
+      }
+    };
+
+    opti_functor func;
+    func.ptrk = this;
+    Powell<opti_functor> powell(func, 1e-12);
+
+    index_ini = func(disto_parameters) / (double)(nb_image_pairs);
+    std::cout << "initial index = " << index_ini << std::endl;
+
+    std::cout << "START minimizing equiprojectivity criterion (with POWELL_ITER)" << std::endl;
+    std::ofstream convergeFile("convergence.txt");
+    std::cout << std::scientific << std::setprecision(15);
+    convergeFile << std::scientific << std::setprecision(15);
+    std::vector<std::vector<double>> dx0_corrDisto = dx_corrDisto;
+    std::vector<std::vector<double>> dy0_corrDisto = dy_corrDisto;
+    for (int iter = 1; iter <= powell_num_iter; iter++) {
+      disto_parameters = powell.minimize(disto_parameters, disto_parameters_perturb);
+      double idx = func(disto_parameters) / (double)(nb_image_pairs);
+      std::cout << "iteration " << iter << ", index = " << idx << std::endl;
+      convergeFile << iter << ' ' << idx << ' ' << disto_parameters[0] << ' ' << disto_parameters[1] << ' '
+                   << disto_parameters[2] << ' ' << disto_parameters[3] << ' ' << disto_parameters[4] << ' '
+                   << disto_parameters[5] << ' ' << disto_parameters[6] << ' ' << disto_parameters[7] << ' '
+                   << disto_parameters[8] << ' ' << disto_parameters[9] << ' ' << disto_parameters[10] << ' '
+                   << disto_parameters[11] << ' ' << disto_parameters[12] << ' ' << disto_parameters[13] << ' '
+                   << std::endl;
+
+      double xu, yu, dxcorr, dycorr;
+      for (int igrain = 0; igrain < num_grains; igrain++) {
+        undistor(disto_parameters, (double)(grain[igrain].refcoord_xpix), (double)(grain[igrain].refcoord_ypix), xu,
+                 yu);
+        dxcorr = xu - (double)(grain[igrain].refcoord_xpix);
+        dycorr = yu - (double)(grain[igrain].refcoord_ypix);
+        for (size_t i_image = 1; i_image < image_numbers_corrDisto.size(); i_image++) {
+          dx_corrDisto[i_image][igrain] = dx0_corrDisto[i_image][igrain] + dxcorr;
+          dy_corrDisto[i_image][igrain] = dy0_corrDisto[i_image][igrain] + dycorr;
+        }
+        orig_x[igrain] = xu;
+        orig_y[igrain] = yu;
+      }
+    }
+    std::cout << "END minimizing equiprojectivity criterion (with POWELL_ITER)\n" << std::endl;
+
+    index_end = func(disto_parameters) / (double)(nb_image_pairs);
+    index_gain = index_ini / index_end;
+
+  } else if (optim_algo == LEVMAR) {
+    
+    // ==================================
+    //.    LEVENBERG-MARQUARDT
+    // ==================================
+
+    const int m = (int)((image_numbers_corrDisto.size() - 1) * grain_pairs.size());
+    const int n = (int)disto_parameters.size();
+
+    int lwa = levmar::get_lwa(m, n);
+    std::vector<int> iwa(n);
+    std::vector<double> fvec(m);
+    std::vector<double> wa(lwa);
+
+    auto fcn = [](void* p, int m, int n, const double* x, double* fvec, int iflag) {
+      // remove warning during compilation
+      (void)iflag;
+      (void)m;
+
+      ptracker* ptrk = (ptracker*)p;
+      std::vector<double> X(n);
+      for (int ip = 0; ip < n; ip++) {
+        X[ip] = x[ip];
+      }
+
+      double A1x, A1y, B1x, B1y;  // undistorted positions on image 1
+      double A2x, A2y, B2x, B2y;  // undistorted positions on image 2
+      double AAx, AAy, BBx, BBy, ABx, ABy, AB;
+
+      size_t n_images = ptrk->image_numbers_corrDisto.size();
+      size_t n_pairs = ptrk->grain_pairs.size();
+      double retval = 0.0;
+      for (size_t i_image = 1; i_image < n_images; i_image++) {
+        for (size_t il = 0; il < n_pairs; il++) {
+          int igrain = ptrk->grain_pairs[il].i;
+          int jgrain = ptrk->grain_pairs[il].j;
+          if (ptrk->NCC_subpix_corrDisto[i_image][igrain] < ptrk->NCC_min ||
+              ptrk->NCC_subpix_corrDisto[i_image][jgrain] < ptrk->NCC_min)
+            continue;
+
+          ptrk->undistor(X, (double)(ptrk->grain[igrain].refcoord_xpix), (double)(ptrk->grain[igrain].refcoord_ypix),
+                         A1x, A1y);
+          ptrk->undistor(X, (double)(ptrk->grain[igrain].refcoord_xpix + ptrk->dx_corrDisto[i_image][igrain]),
+                         (double)(ptrk->grain[igrain].refcoord_ypix + ptrk->dy_corrDisto[i_image][igrain]), A2x, A2y);
+
+          ptrk->undistor(X, (double)(ptrk->grain[jgrain].refcoord_xpix), (double)(ptrk->grain[jgrain].refcoord_ypix),
+                         B1x, B1y);
+          ptrk->undistor(X, (double)(ptrk->grain[jgrain].refcoord_xpix + ptrk->dx_corrDisto[i_image][jgrain]),
+                         (double)(ptrk->grain[jgrain].refcoord_ypix + ptrk->dy_corrDisto[i_image][jgrain]), B2x, B2y);
+
+          ABx = B1x - A1x;
+          ABy = B1y - A1y;
+          AB = sqrt(ABx * ABx + ABy * ABy);
+          ABx /= AB;
+          ABy /= AB;
+          BBx = B2x - B1x;
+          BBy = B2y - B1y;
+          AAx = A2x - A1x;
+          AAy = A2y - A1y;
+          double err = (ABx * (BBx - AAx)) + (ABy * (BBy - AAy));
+            
+          fvec[(i_image - 1) * n_pairs + il] = err;
+          retval += err * err;
+        }
+      }
+
+      return retval;
+    };
+
+    index_ini = fcn(this, m, n, &disto_parameters[0], &fvec[0], 0) / (double)(nb_image_pairs);
+    std::cout << "initial index = " << index_ini << std::endl;
+
+    std::cout << "START minimizing equiprojectivity criterion (with LEVMAR)" << std::endl;
+    int info = levmar::lmdif1(fcn, this, m, n, &disto_parameters[0], &fvec[0], DBL_EPSILON, &iwa[0], &wa[0], lwa);
+    std::cout << "END minimizing equiprojectivity criterion (with LEVMAR)\n" << std::endl;
+    std::cout << "exit state: " << levmar::getInfo(info) << std::endl;
+
+    index_end = fcn(this, m, n, &(disto_parameters[0]), &fvec[0], 0) / (double)(nb_image_pairs);
+    index_gain = index_ini / index_end;
+  }
+  
+  // ====================================================
+  // OPTIMISATION DONE 
+  // ====================================================
 
   logfile << std::scientific << std::setprecision(15);
   logfile << "Initial distorsion index " << index_ini << '\n';
@@ -322,12 +521,13 @@ void ptracker::correction_distortion() {
   std::cout << "A2_corrParallax     " << disto_parameters[13] << std::endl;
 
   // === CREATE DATA FILE FOR PLOTTING THE FIELD OF CORRECTION DISPLACEMENTS ===
+  //
   // in gnuplot
   //
   // ampl = 10.0
   // set size ratio -1
   // plot "errors.txt" u 1:(-$2):($3*ampl):(-$4*ampl) w vec lc 3 notitle
-  
+
   std::ofstream errorFile("errors.txt");
   double xerrormax = -1e20;
   double yerrormax = -1e20;
@@ -372,11 +572,14 @@ void ptracker::correction_distortion() {
   std::cout << "errormax      " << errormax << std::endl;
 
   // === CREATE DATA FILE FOR PLOTTING THE (UN)DISTORTED FRAME ===
+  //
   // in gnuplot
   //
   // ampl = 10.0
   // set size ratio -1
-  // plot "distobox.txt" u 1:(-$2) w l lw 2 lc 1 notitle, "" u ($1+$3*ampl):(-$2-$4*ampl) w l lw 2 lc 1 notitle
+  // plot "distobox.txt" u 1:(-$2) w l lw 2 lc 1 notitle, "" u
+  // ($1+$3*ampl):(-$2-$4*ampl) w l lw 2 lc 1 notitle
+
   std::ofstream errorBoxFile("distobox.txt");
   yd = 0;
   for (xd = 0; xd < dimx; xd += dxd) {
