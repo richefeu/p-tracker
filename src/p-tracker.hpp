@@ -51,7 +51,7 @@
 #include "powell_nr3.hpp"
 
 // local includes
-#include "EquiProj_optimizer_functor.hpp"
+//#include "EquiProj_optimizer_functor.hpp"
 #include "NCC_optimizer_functor.hpp"
 #include "grain_pair.hpp"
 #include "grain_type_2D.hpp"
